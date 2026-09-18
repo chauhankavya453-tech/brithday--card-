@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7eee5" />
+  <title>Happy Birthday</title>
+
+  <style>
+    :root {
+      --cream: #fffaf4;
+      --paper: #fffdf9;
+      --ink: #4d3740;
+      --muted: #9b7779;
+      --rose: #b86f75;
+      --rose-dark: #8f525c;
+      --gold: #d7a85d;
+      --shadow: rgba(84, 48, 55, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,.9), transparent 28%),
+        radial-gradient(circle at 80% 85%, rgba(226,180,160,.25), transparent 30%),
+        linear-gradient(135deg, #f8eee5, #ead4ca);
+    }
+
+    .scene {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 100%;
+      min-height: 100vh;
+      padding: 24px;
+      isolation: isolate;
+    }
+
+    .glow {
+      position: absolute;
+      width: min(80vw, 700px);
+      height: min(80vw, 700px);
+      border-radius: 50%;
+      background: rgba(255, 250, 238, .58);
+      filter: blur(35px);
+      z-index: -1;
+    }
+
+    .instruction {
+      position: absolute;
+      bottom: clamp(28px, 7vh, 65px);
+      margin: 0;
+      color: var(--rose-dark);
+      font-size: clamp(.78rem, 2vw, .95rem);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      animation: breathe 2.6s ease-in-out infinite;
+    }
+
+    .envelope-wrap {
+      position: relative;
+      width: min(82vw, 430px);
+      height: min(60vw, 285px);
+      perspective: 1300px;
+      cursor: pointer;
+      transition: transform .6s ease, opacity .7s ease;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    .envelope-wrap:focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 10px;
+      border-radius: 12px;
+    }
+
+    .envelope-wrap.opened {
+      transform: translateY(120px) scale(.82);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .envelope {
+      position: absolute;
+      inset: 0;
+      filter: drop-shadow(0 20px 22px var(--shadow));
+    }
+
+    .envelope-back {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #d89591;
+    }
+
+    .envelope-back::before,
+    .envelope-back::after {
+      content: "";
+      position: absolute;
+      bottom: -2%;
+      width: 72%;
+      height: 86%;
+      background: #c77d7f;
+    }
+
+    .envelope-back::before {
+      left: -7%;
+      clip-path: polygon(0 0, 100% 100%, 0 100%);
+    }
+
+    .envelope-back::after {
+      right: -7%;
+      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    }
+
+    .envelope-front {
+      position: absolute;
+      inset: auto 0 0;
+      height: 69%;
+      z-index: 4;
+      background: #df9a94;
+      clip-path: polygon(0 0, 50% 65%, 100% 0, 100% 100%, 0 100%);
+      border-radius: 0 0 8px 8px;
+    }
+
+    .flap {
+      position: absolute;
+      inset: 0 0 auto;
+      height: 76%;
+      z-index: 5;
+      background: #e5a6a0;
+      clip-path: polygon(0 0, 100% 0, 50% 90%);
+      transform-origin: top center;
+      transition: transform 1s cubic-bezier(.22, .75, .25, 1);
+      backface-visibility: hidden;
+    }
+
+    .envelope-wrap.open .flap {
+      transform: rotateX(180deg);
+      z-index: 1;
+    }
+
+    .seal {
+      position: absolute;
+      left: 50%;
+      top: 54%;
+      z-index: 7;
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      color: #fff9ed;
+      font-size: 1.2rem;
+      border-radius: 50%;
+      background: var(--rose-dark);
+      box-shadow: 0 4px 10px rgba(80, 39, 46, .25);
+      transform: translate(-50%, -50%);
+      transition: opacity .4s ease;
+    }
+
+    .envelope-wrap.open .seal {
+      opacity: 0;
+    }
+
+    .card {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 2;
+      width: min(86vw, 500px);
+      height: min(118vw, 650px);
+      max-height: 78vh;
+      perspective: 1800px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -45%) scale(.65);
+      transition:
+        opacity .9s ease .55s,
+        transform 1.05s cubic-bezier(.2, .8, .2, 1) .55s;
+    }
+
+    .card.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+    }
+
+    .cover,
+    .inside {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border: 1px solid rgba(184,111,117,.22);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 22px 55px rgba(87, 47, 53, .24);
+      backface-visibility: hidden;
+    }
+
+    .cover {
+      display: grid;
+      place-items: center;
+      padding: 12%;
+      text-align: center;
+      background:
+        linear-gradient(rgba(255,255,255,.4), rgba(255,255,255,.4)),
+        repeating-linear-gradient(0deg, transparent 0 4px, rgba(190,140,120,.025) 5px);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .cover::before,
+    .cover::after {
+      content: "✦";
+      position: absolute;
+      color: var(--gold);
+      font-size: 2rem;
+      animation: twinkle 2.8s ease-in-out infinite;
+    }
+
+    .cover::before {
+      top: 9%;
+      left: 13%;
+    }
+
+    .cover::after {
+      right: 13%;
+      bottom: 13%;
+      animation-delay: 1s;
+    }
+
+    .cover-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      margin: 0 0 22px;
+      color: var(--gold);
+      font-size: .76rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--rose-dark);
+      font-size: clamp(2.2rem, 8vw, 4rem);
+      font-weight: normal;
+      line-height: 1.08;
+    }
+
+    .cover-name {
+      display: block;
+      margin-top: 8px;
+      color: var(--ink);
+      font-style: italic;
+    }
+
+    .floral {
+      margin: 30px 0;
+      color: var(--rose);
+      font-size: clamp(2rem, 8vw, 3rem);
+      letter-spacing: .16em;
+    }
+
+    .tap-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: .9rem;
+      letter-spacing: .1em;
+    }
+
+    .inside {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(28px, 7vw, 56px);
+      text-align: center;
+      transform: rotateY(180deg);
+      background:
+        radial-gradient(circle at 50% 0, rgba(222,178,145,.15), transparent 33%),
+        var(--paper);
+    }
+
+    .card.open .cover {
+      animation: pageFlip 1.3s cubic-bezier(.65, .05, .36, 1) forwards;
+    }
+
+    .card.open .inside {
+      animation: insideReveal 1.3s cubic-bezier(.65, .05, .36, 1) forwards;
+    }
+
+    .inside h2 {
+      margin: 0 0 24px;
+      color: var(--rose-dark);
+      font-size: clamp(1.7rem, 6vw, 2.5rem);
+      font-weight: normal;
+    }
+
+    .poem {
+      margin: 0 auto;
+      max-width: 390px;
+      color: #654c51;
+      font-size: clamp(.98rem, 2.8vw, 1.12rem);
+      font-style: italic;
+      line-height: 1.75;
+    }
+
+    .poem-line {
+      display: block;
+      opacity: 0;
+      transform: translateY(9px);
+    }
+
+    .card.open .poem-line {
+      animation: lineIn .7s ease forwards;
+    }
+
+    .poem-line:nth-child(1) { animation-delay: 1.2s; }
+    .poem-line:nth-child(2) { animation-delay: 1.45s; }
+    .poem-line:nth-child(3) { animation-delay: 1.7s; }
+    .poem-line:nth-child(4) { animation-delay: 1.95s; }
+    .poem-line:nth-child(5) { animation-delay: 2.2s; }
+    .poem-line:nth-child(6) { animation-delay: 2.45s; }
+
+    .final-message {
+      margin: 28px 0 0;
+      color: var(--rose-dark);
+      font-size: clamp(.95rem, 2.8vw, 1.1rem);
+      line-height: 1.6;
+      opacity: 0;
+    }
+
+    .card.open .final-message {
+      animation: lineIn .8s ease 2.8s forwards;
+    }
+
+    .corner {
+      position: absolute;
+      color: var(--gold);
+      font-size: 1.5rem;
+      opacity: .75;
+    }
+
+    .corner.top-left { top: 20px; left: 24px; }
+    .corner.top-right { top: 20px; right: 24px; }
+    .corner.bottom-left { bottom: 20px; left: 24px; }
+    .corner.bottom-right { right: 24px; bottom: 20px; }
+
+    .particle {
+      position: fixed;
+      z-index: -1;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: .55;
+      pointer-events: none;
+      animation: drift linear infinite;
+    }
+
+    .confetti {
+      position: fixed;
+      z-index: 10;
+      top: -20px;
+      width: 7px;
+      height: 13px;
+      pointer-events: none;
+      animation: fall 3.2s ease-in forwards;
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: .55; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(-4px); }
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: .45; transform: scale(.8) rotate(0); }
+      50% { opacity: 1; transform: scale(1.2) rotate(20deg); }
+    }
+
+    @keyframes pageFlip {
+      0% { transform: rotateY(0); }
+      100% { transform: rotateY(-180deg); }
+    }
+
+    @keyframes insideReveal {
+      0% { transform: rotateY(180deg); }
+      100% { transform: rotateY(0); }
+    }
+
+    @keyframes lineIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes drift {
+      from { transform: translateY(110vh) translateX(0) scale(.7); }
+      to { transform: translateY(-15vh) translateX(80px) scale(1.3); }
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(620deg); opacity: 0; }
+    }
+
+    @media (max-width: 480px) {
+      .scene { padding: 16px; }
+      .card {
+        width: min(88vw, 400px);
+        height: min(145vw, 620px);
+      }
+      .inside { padding: 28px 23px; }
+      .poem { line-height: 1.58; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="scene">
+    <div class="glow" aria-hidden="true"></div>
+
+    <div
+      class="envelope-wrap"
+      role="button"
+      tabindex="0"
+      aria-label="Open birthday envelope"
+      aria-pressed="false"
+    >
+      <div class="envelope" aria-hidden="true">
+        <div class="envelope-back"></div>
+        <div class="flap"></div>
+        <div class="envelope-front"></div>
+        <div class="seal">♥</div>
+      </div>
+    </div>
+
+    <p class="instruction">Tap to open</p>
+
+    <article class="card" aria-label="Birthday greeting card">
+      <div class="card-inner">
+        <section
+          class="cover"
+          role="button"
+          tabindex="0"
+          aria-label="Open birthday card"
+        >
+          <div class="cover-content">
+            <p class="eyebrow">A little celebration for</p>
+            <h1>
+              Happy Birthday,
+              <span class="cover-name">Your Friend</span>
+            </h1>
+            <div class="floral" aria-hidden="true">✿ ✧ ✿</div>
+            <p class="tap-note">Tap the card to open</p>
+          </div>
+        </section>
+
+        <section class="inside">
+          <span class="corner top-left">✦</span>
+          <span class="corner top-right">✧</span>
+          <span class="corner bottom-left">✧</span>
+          <span class="corner bottom-right">✦</span>
+
+          <h2>For all the years behind us</h2>
+
+          <p class="poem">
+            <span class="poem-line">From childhood days and skies of blue,</span>
+            <span class="poem-line">To every dream we chased anew,</span>
+            <span class="poem-line">Through laughing fits and changing views,</span>
+            <span class="poem-line">I’m grateful life brought me to you.</span>
+            <span class="poem-line">The best of memories still unfold—</span>
+            <span class="poem-line">Our friendship only grows more gold.</span>
+          </p>
+
+          <p class="final-message">
+            Happy Birthday ❤️<br />
+            Here’s to all the memories we’ve made,<br />
+            and all the ones still waiting for us.
+          </p>
+        </section>
+      </div>
+    </article>
+  </main>
+
+  <script>
+    // Change this name to your friend's name
+    const FRIEND_NAME = "VAISHNAVI";
+
+    const envelope = document.querySelector(".envelope-wrap");
+    const instruction = document.querySelector(".instruction");
+    const card = document.querySelector(".card");
+    const cover = document.querySelector(".cover");
+    const nameElement = document.querySelector(".cover-name");
+
+    nameElement.textContent = FRIEND_NAME;
+
+    function openEnvelope() {
+      if (envelope.classList.contains("opened")) return;
+
+      envelope.classList.add("open");
+      envelope.setAttribute("aria-pressed", "true");
+      instruction.textContent = "A little surprise for you…";
+
+      setTimeout(function () {
+        envelope.classList.add("opened");
+        card.classList.add("visible");
+        instruction.textContent = "Tap the cover to continue";
+      }, 650);
+    }
+
+    function openCard() {
+      if (!card.classList.contains("visible")) return;
+
+      card.classList.add("open");
+      instruction.textContent = "With love, always";
+      createConfetti();
+    }
+
+    function isKeyboardActivate(event) {
+      return (
+        event.key === "Enter" ||
+        event.key === " " ||
+        event.key === "Spacebar" ||
+        event.code === "Space" ||
+        event.code === "NumpadEnter"
+      );
+    }
+
+    envelope.addEventListener("click", openEnvelope);
+    envelope.addEventListener("pointerdown", function (event) {
+      if (event.pointerType === "touch" || event.pointerType === "pen") {
+        openEnvelope();
+      }
+    });
+
+    envelope.addEventListener("keydown", function (event) {
+      if (isKeyboardActivate(event)) {
+        event.preventDefault();
+        openEnvelope();
+      }
+    });
+
+    cover.addEventListener("click", openCard);
+    cover.addEventListener("pointerdown", function (event) {
+      if (event.pointerType === "touch" || event.pointerType === "pen") {
+        openCard();
+      }
+    });
+
+    cover.addEventListener("keydown", function (event) {
+      if (isKeyboardActivate(event)) {
+        event.preventDefault();
+        openCard();
+      }
+    });
+
+    // Floating sparkles
+    for (let i = 0; i < 22; i++) {
+      const particle = document.createElement("span");
+      particle.className = "particle";
+      particle.style.left = (Math.random() * 100) + "vw";
+      particle.style.animationDuration = (8 + Math.random() * 12) + "s";
+      particle.style.animationDelay = (Math.random() * -18) + "s";
+      particle.style.opacity = (0.25 + Math.random() * 0.55).toFixed(2);
+      document.body.appendChild(particle);
+    }
+
+    function createConfetti() {
+      const colors = ["#b86f75", "#d7a85d", "#e8b7a8", "#8f525c", "#f2d7ae"];
+
+      for (let i = 0; i < 34; i++) {
+        const piece = document.createElement("span");
+        piece.className = "confetti";
+        piece.style.left = (Math.random() * 100) + "vw";
+        piece.style.background = colors[i % colors.length];
+        piece.style.animationDelay = (Math.random() * 0.8) + "s";
+        piece.style.animationDuration = (2.5 + Math.random() * 2) + "s";
+        piece.style.transform = "rotate(" + (Math.random() * 180) + "deg)";
+        document.body.appendChild(piece);
+
+        setTimeout(function () {
+          piece.remove();
+        }, 5000);
+      }
+    }
+  </script>
+</body>
+</html>
